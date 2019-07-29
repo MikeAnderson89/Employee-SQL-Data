@@ -9,7 +9,7 @@ CREATE TABLE employees(
 CREATE TABLE departments (
 	dept_no varchar(15) primary key,
 	dept_name varchar(30) not null);
-	
+
 CREATE TABLE dept_emp (
 	emp_no int not null references employees(emp_no),
 	dept_no varchar(15) not null references departments(dept_no),
@@ -37,7 +37,7 @@ CREATE TABLE titles(
 SELECT 'postgresql' AS dbms,t.table_catalog,t.table_schema,t.table_name,c.column_name,c.ordinal_position,c.data_type,c.character_maximum_length,n.constraint_type,k2.table_schema,k2.table_name,k2.column_name FROM information_schema.tables t NATURAL LEFT JOIN information_schema.columns c LEFT JOIN(information_schema.key_column_usage k NATURAL JOIN information_schema.table_constraints n NATURAL LEFT JOIN information_schema.referential_constraints r)ON c.table_catalog=k.table_catalog AND c.table_schema=k.table_schema AND c.table_name=k.table_name AND c.column_name=k.column_name LEFT JOIN information_schema.key_column_usage k2 ON k.position_in_unique_constraint=k2.ordinal_position AND r.unique_constraint_catalog=k2.constraint_catalog AND r.unique_constraint_schema=k2.constraint_schema AND r.unique_constraint_name=k2.constraint_name WHERE t.TABLE_TYPE='BASE TABLE' AND t.table_schema NOT IN('information_schema','pg_catalog');
 
 --List the following details of each employee: employee number, last name, first name, gender, and salary.
-select employees.emp_no, last_name, first_name, gender, salary from 
+select employees.emp_no, last_name, first_name, gender, salary from
 	employees inner join salaries
 	on employees.emp_no = salaries.emp_no
 order by employees.emp_no;
@@ -45,8 +45,8 @@ order by employees.emp_no;
 --List employees who were hired in 1986.
 select emp_no, last_name, first_name, hire_date from employees
 	where hire_date between '1986-1-01' and '1986-12-31';
-	
---List the manager of each department with the following information: 
+
+--List the manager of each department with the following information:
 --department number, department name, the manager's employee number, last name, first name, and start and end employment dates.
 select departments.dept_no, departments.dept_name, dept_manager.emp_no, last_name, first_name, from_date, to_date from
 	dept_manager left join employees
@@ -89,4 +89,20 @@ select last_name, count(last_name) from employees
 group by last_name
 order by count(last_name) desc;
 
+--Get average salary by title
+select title, avg(salary) as AvgSalary from
+	employees inner join salaries
+		on employees.emp_no = salaries.emp_no
+	inner join titles
+		on employees.emp_no = titles.emp_no
+group by title;
 
+--Search ID number
+select * from employees
+	inner join titles
+		on employees.emp_no = titles.emp_no
+	inner join dept_emp
+		on employees.emp_no = dept_emp.emp_no
+	inner join departments
+		on dept_emp.dept_no = departments.dept_no
+	where employees.emp_no = '499942';
